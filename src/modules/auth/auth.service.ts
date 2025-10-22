@@ -24,8 +24,7 @@ export class AuthService {
 
     }
 
-    async login(loginUserDTO: LoginDTO): Promise<User> {
-        console.log("loginUserDTO", loginUserDTO);
+    async login(loginUserDTO: LoginDTO) {
         const user = await this.usersService.findByEmail(loginUserDTO.email);
         if (!user) {
             throw new NotFoundException("Invalid email or password");
@@ -35,22 +34,25 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException("Invalid email or password");
         }
-        const {accessToken} = await this.generateTokens(user._id as string, user.email);
-        console.log("accessToken", accessToken);
+        const accessToken = await this.generateToken(user._id as string, user.email);
+        
         return {
-            ...user.toObject(),
-            accessToken,
-        };
+            user:{
+                _id: user._id,
+                email: user.email,
+                name: user.name,
+            },
+            accessToken, // Return token for cookie
+          };
+        
     }
 
-    private async generateTokens(userId: string, email: string) {
+    private async generateToken(userId: string, email: string): Promise<string> {
         const payload = { sub: userId, email };
-    
-        const accessToken = await this.jwtService.signAsync(payload);
-    
-        return {
-          accessToken,
-        };
+        return this.jwtService.signAsync(payload, {
+          secret: process.env.JWT_SECRET,
+          expiresIn: '1d',
+        });
       }
 
 }
