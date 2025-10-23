@@ -2,12 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
-import { doubleCsrf } from 'csrf-csrf';
-import { Request } from 'express';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cookieParser());// 
+  app.use(cookieParser());
+  app.use(helmet());
   app.enableCors({
     // origin:"*"
     origin: process.env.FRONTEND_URL,
@@ -20,6 +20,7 @@ async function bootstrap() {
     forbidNonWhitelisted: true, // Throw error if non-whitelisted properties are present
     transform: true,            // Automatically transform payloads to DTO instances
   }));
+
   await app.listen(process.env.PORT ?? 8000);
   console.log(`🚀 Server is running on port ${process.env.PORT}`);
 }
