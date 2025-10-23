@@ -4,15 +4,15 @@ import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { PrismaModule } from './prisma/prisma.module';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGO_URI as string),
     UsersModule,
     AuthModule,
+    PrismaModule,
   ],
   providers: [AppService],
   controllers: [AppController],

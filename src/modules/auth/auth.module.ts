@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    UsersModule, 
     JwtModule.register({
       global: true,
     secret: process.env.JWT_SECRET,
@@ -15,6 +14,5 @@ import { JwtModule } from '@nestjs/jwt';
 ],
   providers: [AuthService],
   controllers: [AuthController],
-  exports: [AuthService] // for the app module to use the auth service for authentication
 })
 export class AuthModule {}

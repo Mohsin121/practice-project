@@ -1,22 +1,12 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+// Prisma generates types automatically from schema.prisma
+// You can import the generated User type like this:
+// import { User } from '@prisma/client';
 
-@Schema({ timestamps: true })
-export class User extends Document {
-  @Prop({ required: true, unique: true })
+export class User {
+  id: number;
   email: string;
-
-  @Prop({ required: true })
-  password: string;
-
-  @Prop()
-  name: string;
-
-  @Prop({ default: 'USER' })
-  role: string;
-
-  @Prop({ default: false })
-  isVerified: boolean;
+  hash: string;
+  name?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
-
-export const UserSchema = SchemaFactory.createForClass(User);

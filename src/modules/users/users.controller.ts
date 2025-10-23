@@ -6,15 +6,15 @@ import { AuthGuard } from '../auth/auth.guard';
 export class UsersController {
   constructor (private readonly usersService: UsersService) {}
 
-  @UseGuards(AuthGuard)
-  @Get()
-  findAll(){
-    return this.usersService.findAll();
+  // @UseGuards(AuthGuard)
+  // @Get()
+  // findAll(){
+  //   return this.usersService.findAll();
     
-  }
-  @Get(':id')
-  findOne(@Param('id') id: string){
-    return this.usersService.findOne(id);
-  }
+  // }
+  // @Get(':id')
+  // findOne(@Param('id') id: string){
+  //   return this.usersService.findOne(id);
+  // }
 
 }
