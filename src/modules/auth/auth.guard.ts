@@ -14,7 +14,6 @@ import {
 
     
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        console.log("JWT_SECRET", process.env.JWT_SECRET);
       const request = context.switchToHttp().getRequest();
       const token = this.extractTokenFromHeader(request);
       if (!token) {
@@ -29,7 +28,10 @@ import {
         );
         // 💡 We're assigning the payload to the request object here
         // so that we can access it in our route handlers
-        request['user'] = payload;
+        request['user'] = {
+          id: payload.sub,
+          email: payload.email,
+        };
       } catch {
         throw new UnauthorizedException();
       }

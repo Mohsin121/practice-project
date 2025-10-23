@@ -6,10 +6,19 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // // Log all incoming requests
+  // app.use((req, res, next) => {
+  //   console.log(`📨 ${req.method} ${req.url}`);
+  //   console.log('Headers:', req.headers);
+  //   console.log('Body:', req.body);
+  //   next();
+  // });
+  
   app.use(cookieParser());
   app.use(helmet());
   app.enableCors({
-    // origin:"*"
+    // origin: "*",  // Allow all origins for testing
     origin: process.env.FRONTEND_URL,
     credentials: true,
   });
