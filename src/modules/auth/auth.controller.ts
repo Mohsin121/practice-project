@@ -1,12 +1,21 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
-import type { Response } from 'express';
+import type { Response , Request } from 'express';
+import {generateCsrfToken} from 'src/utils/generateCsrfToken';
+
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
+  
+
+   @Get('csrf-token')
+  getCsrfToken(@Req() req: Request, @Res() res: Response) {
+    const csrfToken = generateCsrfToken(req, res); 
+    return res.json({ csrfToken });
+  }
 
     @Post('register')
     async register(@Body() registerUserDTO: RegisterUserDTO) {
