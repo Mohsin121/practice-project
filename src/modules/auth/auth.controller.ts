@@ -4,7 +4,7 @@ import { RegisterUserDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
 import type { Response , Request } from 'express';
 import {generateCsrfToken} from 'src/utils/generateCsrfToken';
-import { AuthGuard } from './auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 
 @Controller('auth')
@@ -51,7 +51,7 @@ export class AuthController {
     }
 
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Get('me')
     async me(@Req() req: Request) {
       return req.user;
