@@ -42,42 +42,41 @@ export class AuthService {
        
     }
 
-    async login(loginUserDTO: LoginDTO) {
+    async validateUser(email: string, password: string) {
         const user = await this.prismaService.user.findUnique({
             where:{
-                email: loginUserDTO.email,
+                email: email,
             }
         })
-
         if (!user) {
-            throw new NotFoundException("Invalid email or password");
+            throw new NotFoundException("User not found");
         }
-
-
-
-        const isPasswordValid = await bcrypt.compare(loginUserDTO.password, user.hash);
+        const isPasswordValid = await bcrypt.compare(password, user.hash);
         if (!isPasswordValid) {
             throw new UnauthorizedException("Invalid email or password");
         }
-        const accessToken = await this.generateToken(user.id.toString(), user.email);
-        
-        return {
-            user:{
+        const { hash, ...userWithoutHash } = user;
+        return userWithoutHash;
+    }
+
+    async login(user: any) {
+        const payload = { sub: user.id, email: user.email };
+
+        const accessToken = await this.jwtService.signAsync(payload, {
+            secret: process.env.JWT_SECRET,
+            expiresIn: '1d',
+          });
+
+          return {
+            user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-            },
-            accessToken, // Return token for cookie
+              },
+              accessToken,
           };
         
     }
 
-    private async generateToken(userId: string, email: string): Promise<string> {
-        const payload = { sub: userId, email };
-        return this.jwtService.signAsync(payload, {
-          secret: process.env.JWT_SECRET,
-          expiresIn: '1d',
-        });
-      }
 
 }

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { JwtStrategy } from 'src/strategies/jwt.strategy';
+import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -13,9 +14,10 @@ import { JwtStrategy } from 'src/strategies/jwt.strategy';
     secret: process.env.JWT_SECRET,
     signOptions: { expiresIn: '1d' },
   }),
+  PassportModule,
   PrismaModule,
 ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}
