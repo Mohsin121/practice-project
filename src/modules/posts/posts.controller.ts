@@ -11,7 +11,7 @@ export class PostsController {
     constructor(private readonly postsService: PostsService) {}
 
 
-    @Roles(Role.ADMIN)
+    @Roles(Role.USER)
     @Post()
     create(@Body() data: CreatePostDTO, @GetUser() user: User){
         const userId = user.id;
