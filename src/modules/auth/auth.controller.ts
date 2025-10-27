@@ -1,14 +1,12 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDTO } from './dto/register.dto';
-import { LoginDTO } from './dto/login.dto';
 import type { Response, Request } from 'express';
-import { generateCsrfToken } from 'src/utils/generateCsrfToken';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from 'src/guards/local-auth.guard';
 import { GetUser, Public } from './decorators';
 import type { User } from '@prisma/client';
+import { LoginDTO } from './dto/login.dto';
+import { generateCsrfToken } from 'src/utils/generateCsrfToken';
 
 
 @Controller('auth')
@@ -21,6 +19,8 @@ export class AuthController {
   //   const csrfToken = generateCsrfToken(req, res); 
   //   return res.json({ csrfToken });
   // }
+
+
   @Public()
   @Post('register')
   async register(@Body() registerUserDTO: RegisterUserDTO) {
@@ -45,24 +45,6 @@ export class AuthController {
     }
   }
 
-  // @HttpCode(HttpStatus.OK)
-  // @Post('login')
-  // async login(
-  //     @Body() loginUserDTO: LoginDTO,
-  //     @Res({passthrough: true}) res: Response) {
-  //     const {user, accessToken} = await this.authService.login(loginUserDTO);
-  //     res.cookie('access_token',accessToken, {
-  //         httpOnly: true,
-  //         secure: process.env.NODE_ENV === 'production',
-  //         sameSite: 'strict',
-  //         maxAge: 24 * 60 * 60 * 1000, // 1 day
-  //     });
-  //     return {
-  //         message: 'Login successful',
-  //         user,
-  //     }
-
-  // }
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('logout')

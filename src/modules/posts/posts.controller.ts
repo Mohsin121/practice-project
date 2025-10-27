@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { CreatePostDTO } from './dto/create-post.dto';
 import type { Request } from 'express';
 import { GetUser } from '../auth/decorators';
@@ -28,7 +27,6 @@ export class PostsController {
             throw new UnauthorizedException('User not found');
         }
         const userId = (req.user as User).id;
-
         return this.postsService.findAll(userId);
     }
 
