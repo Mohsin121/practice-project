@@ -4,14 +4,15 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { CreatePostDTO } from './dto/create-post.dto';
 import type { Request } from 'express';
 import { GetUser } from '../auth/decorators';
-import type { User } from '@prisma/client';
+import { Role, type User } from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('posts')
 export class PostsController {
     constructor(private readonly postsService: PostsService) {}
 
 
-    @UseGuards(JwtAuthGuard)
+    @Roles(Role.ADMIN)
     @Post()
     create(@Body() data: CreatePostDTO, @GetUser() user: User){
         const userId = user.id;
@@ -20,11 +21,15 @@ export class PostsController {
         }
         return this.postsService.create(data, userId);
     }
-
-    @UseGuards(JwtAuthGuard)
+  
     @Get()
-    findAll(@GetUser() user: User){
-        return this.postsService.findAll(user.id);
+    findAll(@Req() req: Request){
+        if (!req.user) {
+            throw new UnauthorizedException('User not found');
+        }
+        const userId = (req.user as User).id;
+
+        return this.postsService.findAll(userId);
     }
 
 }

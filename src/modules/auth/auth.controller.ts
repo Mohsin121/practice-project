@@ -7,7 +7,7 @@ import { generateCsrfToken } from 'src/utils/generateCsrfToken';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from 'src/guards/local-auth.guard';
-import { GetUser } from './decorators';
+import { GetUser, Public } from './decorators';
 import type { User } from '@prisma/client';
 
 
@@ -21,13 +21,13 @@ export class AuthController {
   //   const csrfToken = generateCsrfToken(req, res); 
   //   return res.json({ csrfToken });
   // }
-
+  @Public()
   @Post('register')
   async register(@Body() registerUserDTO: RegisterUserDTO) {
     return this.authService.register(registerUserDTO);
   }
 
-
+  @Public()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -63,7 +63,7 @@ export class AuthController {
   //     }
 
   // }
-
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
@@ -72,7 +72,6 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@GetUser() user: User) {
     return user;

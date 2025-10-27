@@ -9,25 +9,21 @@ import { UserSettingDTO } from './dto/user-setting.dto';
 export class UsersController {
   constructor (private readonly userService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(){
     return this.userService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string){
     return this.userService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: UpdateUserDTO){
     return this.userService.update(id, data);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id/settings')
   updateSettings(@Param('id') id: string, @Body() data: UserSettingDTO){
     return this.userService.updateSettings(id, data);
