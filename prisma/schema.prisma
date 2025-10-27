@@ -4,33 +4,46 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id @default(autoincrement())
+model User {
+  id        String      @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email String @unique
-  hash String
-  name String?
+  email       String       @unique
+  hash        String
+  name        String?
+  userSetting UserSetting?
+  post Post[]
 
-  bookmark Bookmark[]
   @@map("users")
 }
 
-model Bookmark{
-  id Int @id @default(autoincrement())
+model UserSetting {
+  id            String     @id @default(cuid())
+  notifications Boolean @default(true)
+  smsAlerts     Boolean @default(true)
+
+  user   User @relation(fields: [userId], references: [id])
+  userId String  @unique
+
+  @@map("user_settings")
+}
+
+model Post {
+  id            String     @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   title String
-  description String?
-  link String
+  content String
 
-  userId Int 
-  user User @relation(fields: [userId], references: [id])
-  @@map("bookmarks")
+  author User @relation(fields:[authorId], references:[id])
+  authorId String
+
+  
+
+  @@map("posts")
 }
-

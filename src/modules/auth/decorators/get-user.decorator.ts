@@ -1,5 +1,5 @@
 
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export const GetUser = createParamDecorator(
@@ -18,7 +18,7 @@ export const GetUser = createParamDecorator(
       },
     });
     if (!user) {
-      return null;
+      return new UnauthorizedException('User not found');
     }
 
     const { hash, ...userWithoutHash } = user;
