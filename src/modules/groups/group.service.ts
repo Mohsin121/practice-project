@@ -9,6 +9,12 @@ export class GroupService {
 
 
     async create(data: CreateGroupDTO, userId: string){
+        const ownerRole = await this.prisma.role.findFirst({
+            where: { name: 'OWNER' },
+          });
+        if (!ownerRole) {
+            throw new NotFoundException('Owner role not found');
+        }
         return this.prisma.group.create({
             data:{
                 title: data.title,
@@ -18,6 +24,7 @@ export class GroupService {
                 groupMember: {
                     create: {
                         userId: userId,
+                        roleId: ownerRole.id,
                     },
                 },
             },
@@ -74,7 +81,12 @@ export class GroupService {
     }
 
     async joinGroup(groupId: string, userId: string){
-      
+        const memberRole = await this.prisma.role.findFirst({
+            where: { name: 'MEMBER' },
+          });
+        if (!memberRole) {
+            throw new NotFoundException('Member role not found');
+        }
         const group = await this.prisma.group.findUnique({
             where :{
                 id: groupId,
@@ -100,6 +112,7 @@ export class GroupService {
                 data: {
                     groupId: groupId,
                     userId: userId,
+                    roleId: memberRole.id,
                 },
             });
     }

@@ -7,10 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./prisma/ERD.svg"     // or .png, .pdf
+  theme    = "forest"              // optional
+}
+
+enum GlobalRole {
+  SUPER_ADMIN
   USER
-  MODERATOR
 }
 
 model User {
@@ -21,7 +26,7 @@ model User {
   email       String       @unique
   hash        String
   name        String?
-  role        Role @default(USER)
+  role        GlobalRole @default(USER)
   userSetting UserSetting?
   post Post[]
   group Group[]
@@ -81,11 +86,46 @@ model Group {
 
 model GroupMember {
  joinedAt DateTime @default(now())
+
  user User @relation(fields:[userId], references:[id])
  userId String
+
  group Group @relation(fields:[groupId], references:[id])
  groupId String
+
+ role Role? @relation(fields:[roleId], references:[id])
+ roleId String?
+
  @@unique([userId, groupId])
  @@map("group_members")
+}
+
+model Role {
+  id String @id @default(cuid())
+  name String
+  groupMembers GroupMember[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id String @id @default(cuid())
+  name String
+  rolePermissions RolePermission[]
+  @@map("permissions")
+}
+
+model RolePermission {
+  id String @id @default(cuid())
+ 
+  permission Permission @relation(fields:[permissionId], references:[id])
+  permissionId String
+
+  role Role @relation(fields:[roleId], references:[id])
+  roleId String
+
+  @@unique([permissionId, roleId])
+  @@map("group_permissions")
 }
 

@@ -13,7 +13,7 @@ export class PostsController {
     constructor(private readonly postsService: PostsService) {}
 
 
-    @Roles(Role.USER)
+    // @Roles(Role.USER)
     @Post()
     create(@Body() data: CreatePostDTO, @GetUser() user: User){
         const userId = user.id;
@@ -23,7 +23,7 @@ export class PostsController {
         return this.postsService.create(data, userId);
     }
 
-    @Roles(Role.USER)
+    // @Roles(Role.USER)
     @Post('group')
     createGroupPost(@Body() data: CreateGroupPostDTO, @GetUserId() userId: string){
         return this.postsService.createGroupPost(data, userId);
