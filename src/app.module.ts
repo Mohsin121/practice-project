@@ -9,6 +9,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards/role.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GroupModule } from './modules/groups/group.module';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     AuthModule,
     PrismaModule,
     PostsModule,
+    GroupModule,
   ],
   providers: [
     AppService,
