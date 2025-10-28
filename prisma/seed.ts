@@ -1,6 +1,8 @@
 // prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 import { hashGenerator } from '../src/utils/hashGenerator';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -8,9 +10,9 @@ const prisma = new PrismaClient();
 
 const SEED_CONFIG = {
   // ⚠️ WARNING: This will DELETE ALL DATA in your database!
-  DROP_ALL_DATA: true,           // Set to true to drop all existing data before seeding
-
-  SEED_ADMIN_USER: true,          // Create super admin user
+  DROP_ALL_DATA: false,           // Set to true to drop all existing data before seeding
+ 
+  SEED_ADMIN_USER: false,          // Create super admin user
   SEED_PERMISSIONS: false,         // Create permissions
   SEED_ROLES: false,               // Create group roles (OWNER, EDITOR, MEMBER)
   ASSIGN_PERMISSIONS_TO_ROLES: false, // Assign permissions to roles
@@ -175,6 +177,34 @@ async function main() {
 
   console.log('');
   console.log('🎉 Seeding completed successfully!');
+  
+  // 🔒 Auto-reset ALL flags to false for safety
+  try {
+    const seedFilePath = path.join(__dirname, 'seed.ts');
+    let fileContent = fs.readFileSync(seedFilePath, 'utf-8');
+    
+    // Replace all true flags with false in SEED_CONFIG
+    const updatedContent = fileContent.replace(
+      /(const SEED_CONFIG = \{[\s\S]*?\n\};)/,
+      (match) => {
+        return match
+          .replace(/DROP_ALL_DATA:\s*true/g, 'DROP_ALL_DATA: false')
+          .replace(/SEED_ADMIN_USER:\s*true/g, 'SEED_ADMIN_USER: false')
+          .replace(/SEED_PERMISSIONS:\s*true/g, 'SEED_PERMISSIONS: false')
+          .replace(/SEED_ROLES:\s*true/g, 'SEED_ROLES: false')
+          .replace(/ASSIGN_PERMISSIONS_TO_ROLES:\s*true/g, 'ASSIGN_PERMISSIONS_TO_ROLES: false');
+      }
+    );
+    
+    fs.writeFileSync(seedFilePath, updatedContent, 'utf-8');
+    console.log('');
+    console.log('🔒 AUTO-RESET: All flags have been set to false');
+    console.log('   (Enable the flags you need before next run)');
+  } catch (error) {
+    console.warn('');
+    console.warn('⚠️  Could not auto-reset flags:', error.message);
+    console.log('   Please manually set flags to false after this run.');
+  }
 }
 
 main()
