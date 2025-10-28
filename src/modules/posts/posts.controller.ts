@@ -5,6 +5,8 @@ import type { Request } from 'express';
 import { GetUser } from '../auth/decorators';
 import { Role, type User } from '@prisma/client';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { GetUserId } from '../auth/decorators/get-userId.decorator';
+import { CreateGroupPostDTO } from './dto/create-group-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -20,6 +22,12 @@ export class PostsController {
         }
         return this.postsService.create(data, userId);
     }
+
+    @Roles(Role.USER)
+    @Post('group')
+    createGroupPost(@Body() data: CreateGroupPostDTO, @GetUserId() userId: string){
+        return this.postsService.createGroupPost(data, userId);
+    }
   
     @Get()
     findAll(@Req() req: Request){
@@ -29,5 +37,7 @@ export class PostsController {
         const userId = (req.user as User).id;
         return this.postsService.findAll(userId);
     }
+
+
 
 }
