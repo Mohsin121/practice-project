@@ -1,4 +1,3 @@
-// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 import { hashGenerator } from '../src/utils/hashGenerator';
 import * as fs from 'fs';
