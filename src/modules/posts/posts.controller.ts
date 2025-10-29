@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDTO } from './dto/create-post.dto';
 import type { Request } from 'express';
@@ -28,6 +28,12 @@ export class PostsController {
     createGroupPost(@Body() data: CreateGroupPostDTO, @GetUserId() userId: string){
         return this.postsService.createGroupPost(data, userId);
     }
+
+    @Post(':postId/like')
+    toggleLikePost(@Param('postId') postId: string, @GetUserId() userId: string){
+        return this.postsService.toggleLikePost(postId, userId);
+    }
+    
   
     @Get()
     findAll(@Req() req: Request){

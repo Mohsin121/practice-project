@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { CreateGroupPostDTO } from './dto/create-group-post.dto';
@@ -48,6 +48,53 @@ export class PostsService {
         });
     }
 
+    async likedCount(postId: string){
+        return this.prisma.postLike.count({
+            where: {
+                postId: postId,
+            },
+        });
+    }
+
+    async toggleLikePost(postId: string, userId: string) {
+        const postLike = await this.prisma.postLike.findUnique({
+          where: {
+            postId_likedById: {
+              postId,
+              likedById: userId,
+            },
+          },
+        });
+      
+        if (postLike) {
+          await this.prisma.postLike.delete({
+            where: { id: postLike.id },
+          });
+      
+          const likeCount = await this.likedCount(postId);
+      
+          return {
+            liked: false,
+            likeCount,
+          };
+        }
+      
+        await this.prisma.postLike.create({
+          data: {
+            postId,
+            likedById: userId,
+          },
+        });
+      
+        const likeCount = await this.likedCount(postId);
+      
+        return {
+          liked: true,
+          likeCount,
+        };
+      }
+      
+
     async findAll(authorId: string){
         return this.prisma.post.findMany({
             where: {
@@ -56,6 +103,11 @@ export class PostsService {
             include: {
                 comments: {
                     omit: {postId: true},
+                },
+                _count: {
+                    select: {
+                        postLikes: true,
+                    },
                 },
             },
            
