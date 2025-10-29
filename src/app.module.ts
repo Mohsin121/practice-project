@@ -12,7 +12,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GroupModule } from './modules/groups/group.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { MailModule } from './modules/mail/mail.module';
-import { MailService } from './modules/mail/mail.service';
+import { SocketModule } from './modules/socket/socket.module';
 
 
 @Module({
@@ -25,6 +25,7 @@ import { MailService } from './modules/mail/mail.service';
     GroupModule,
     CommentsModule,
     MailModule,
+    SocketModule,
   ],
   providers: [
     AppService,
