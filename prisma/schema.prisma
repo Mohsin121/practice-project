@@ -33,6 +33,7 @@ model User {
   post Post[]
   group Group[]
   groupMember GroupMember[]
+  comments Comment[]
 
   @@map("users")
 }
@@ -62,6 +63,8 @@ model Post {
 
   group Group? @relation(fields:[groupId], references:[id])
   groupId String?
+
+  comments Comment[]
 
   
   @@map("posts")
@@ -95,39 +98,30 @@ model GroupMember {
  group Group @relation(fields:[groupId], references:[id])
  groupId String
 
- role Role? @relation(fields:[roleId], references:[id])
- roleId String?
 
  @@unique([userId, groupId])
  @@map("group_members")
 }
 
-model Role {
+model Comment {
   id String @id @default(cuid())
-  name String
-  groupMembers GroupMember[]
-  rolePermissions RolePermission[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content String
 
-  @@map("roles")
+  commentedBy User? @relation(fields:[commentedById], references:[id])
+  commentedById String?
+
+  post Post @relation(fields:[postId], references:[id])
+  postId String
+
+  parentComment Comment? @relation("CommentReplies", fields:[parentCommentId], references:[id])
+  parentCommentId String?
+
+  replies Comment[] @relation("CommentReplies")
+
+  @@map("comments")
 }
 
-model Permission {
-  id String @id @default(cuid())
-  name String
-  rolePermissions RolePermission[]
-  @@map("permissions")
-}
 
-model RolePermission {
-  id String @id @default(cuid())
- 
-  permission Permission @relation(fields:[permissionId], references:[id])
-  permissionId String
-
-  role Role @relation(fields:[roleId], references:[id])
-  roleId String
-
-  @@unique([permissionId, roleId])
-  @@map("group_permissions")
-}
 

@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards/role.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GroupModule } from './modules/groups/group.module';
+import { CommentsModule } from './modules/comments/comments.module';
 
 
 @Module({
@@ -20,6 +21,7 @@ import { GroupModule } from './modules/groups/group.module';
     PrismaModule,
     PostsModule,
     GroupModule,
+    CommentsModule,
   ],
   providers: [
     AppService,

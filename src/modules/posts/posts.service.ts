@@ -53,6 +53,12 @@ export class PostsService {
             where: {
                 authorId: authorId,
             },
+            include: {
+                comments: {
+                    omit: {postId: true},
+                },
+            },
+           
         });
     }
 }
