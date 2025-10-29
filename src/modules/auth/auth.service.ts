@@ -1,12 +1,10 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { RegisterUserDTO } from './dto/register.dto';
-import { LoginDTO } from './dto/login.dto';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { User } from 'generated/prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +12,7 @@ export class AuthService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly jwtService: JwtService,
+        private readonly mailService: MailService,
     ) { }
 
     async register(registerUserDTO: RegisterUserDTO) {
@@ -34,6 +33,7 @@ export class AuthService {
 
 
             })
+            await this.mailService.sendWelcomeEmail("mhsnmubeen@gmail.com", newUser.name || '');
 
             const { hash, ...user } = newUser;
 

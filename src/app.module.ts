@@ -11,6 +11,8 @@ import { RolesGuard } from './guards/role.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GroupModule } from './modules/groups/group.module';
 import { CommentsModule } from './modules/comments/comments.module';
+import { MailModule } from './modules/mail/mail.module';
+import { MailService } from './modules/mail/mail.service';
 
 
 @Module({
@@ -22,6 +24,7 @@ import { CommentsModule } from './modules/comments/comments.module';
     PostsModule,
     GroupModule,
     CommentsModule,
+    MailModule,
   ],
   providers: [
     AppService,
