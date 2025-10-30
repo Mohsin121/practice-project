@@ -4,9 +4,11 @@ import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AuthenticatedSocketAdapter } from './modules/socket/socket.adaptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
   // // Log all incoming requests
   // app.use((req, res, next) => {
@@ -18,6 +20,13 @@ async function bootstrap() {
   
   app.use(cookieParser());
   app.use(helmet());
+  
+  // Serve static files (uploaded images)
+  // __dirname = dist/src, so we go up two levels to reach project root
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+  
   app.enableCors({
     // origin: "*",  // Allow all origins for testing
     origin: process.env.FRONTEND_URL,

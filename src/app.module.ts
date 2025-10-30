@@ -13,6 +13,7 @@ import { GroupModule } from './modules/groups/group.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { MailModule } from './modules/mail/mail.module';
 import { SocketModule } from './modules/socket/socket.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { SocketModule } from './modules/socket/socket.module';
     CommentsModule,
     MailModule,
     SocketModule,
+    UploadsModule,
   ],
   providers: [
     AppService,

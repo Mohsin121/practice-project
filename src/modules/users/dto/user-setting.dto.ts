@@ -1,16 +1,24 @@
-import { IsBoolean, IsNotEmpty, IsOptional } from "class-validator";
+import { IsBoolean, IsOptional } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class UserSettingDTO {
 
-
-    @IsNotEmpty()
-    @IsBoolean()
     @IsOptional()
-    smsAlerts: boolean;
-
-    @IsNotEmpty()
+    @Transform(({ value }) => {
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+      return value;
+    })
     @IsBoolean()
+    notifications?: boolean;
+
     @IsOptional()
-    notifications: boolean;
+    @Transform(({ value }) => {
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+      return value;
+    })
+    @IsBoolean()
+    smsAlerts?: boolean;
 
 }

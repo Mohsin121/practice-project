@@ -4,12 +4,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { UserSettingDTO } from './dto/user-setting.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { UploadsService } from '../uploads/uploads.service';
+import { getFileUrl } from 'src/utils/file-url.helper';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prismaService: PrismaService,
-  ) { }
+    private readonly uploadsService: UploadsService,
+    ) {}
 
 
   async findAll() {
@@ -30,6 +33,7 @@ export class UsersService {
           select: {
             notifications: true,
             smsAlerts: true,
+            profilePicture: true,
           },
         },
         post: {
@@ -45,7 +49,15 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException("User not found")
     }
-    return user;
+    
+    // Add full URL for profile picture
+    return {
+      ...user,
+      userSetting: user.userSetting ? {
+        ...user.userSetting,
+        profilePictureUrl: getFileUrl(user.userSetting.profilePicture),
+      } : null,
+    };
   }
 
   async update(id: string, data: UpdateUserDTO) {
@@ -64,7 +76,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async updateSettings(userId: string, data: UserSettingDTO) {
+  async updateSettings(userId: string, data: UserSettingDTO, filePath: string | null) {
     const user = await this.prismaService.user.findUnique({
       where: {
         id: userId
@@ -82,11 +94,20 @@ export class UsersService {
       where: {
         userId
       },
-      data: data,
+      data: {
+        ...data,
+        profilePicture: filePath,
+      },
     })
 
-    return updatedUserSetting;
+    // Return with full URL for profile picture
+    return {
+      ...updatedUserSetting,
+      profilePictureUrl: getFileUrl(updatedUserSetting.profilePicture),
+    };
   }
+
+  
 
 }
 

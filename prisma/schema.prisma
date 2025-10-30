@@ -41,6 +41,7 @@ model UserSetting {
   id            String     @id @default(cuid())
   notifications Boolean @default(true)
   smsAlerts     Boolean @default(true)
+  profilePicture String?
 
   user   User @relation(fields: [userId], references: [id])
   userId String  @unique
