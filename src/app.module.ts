@@ -4,17 +4,42 @@ import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { PrismaModule } from './prisma/prisma.module';
+import { PostsModule } from './modules/posts/posts.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './guards/role.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GroupModule } from './modules/groups/group.module';
+import { CommentsModule } from './modules/comments/comments.module';
+import { MailModule } from './modules/mail/mail.module';
+import { SocketModule } from './modules/socket/socket.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGO_URI as string),
     UsersModule,
     AuthModule,
+    PrismaModule,
+    PostsModule,
+    GroupModule,
+    CommentsModule,
+    MailModule,
+    SocketModule,
+    UploadsModule,
   ],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
   controllers: [AppController],
 })
 export class AppModule { }  

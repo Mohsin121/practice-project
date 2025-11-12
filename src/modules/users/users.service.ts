@@ -1,37 +1,114 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from './entities/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CreateUserDTO } from './dto/create-user.dto';
-import  bcrypt from 'bcrypt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { UserSettingDTO } from './dto/user-setting.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
+import { UploadsService } from '../uploads/uploads.service';
+import { getFileUrl } from 'src/utils/file-url.helper';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectModel(User.name) private userModel: Model<User>,
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly uploadsService: UploadsService,
     ) {}
 
-    async create(createUserDTO: CreateUserDTO) : Promise<User>{
-        const hashedPassword = await bcrypt.hash(createUserDTO.password, 10)
-      const newUser = new this.userModel({...createUserDTO, password: hashedPassword});
-      return newUser.save()
+
+  async findAll() {
+    return this.prismaService.user.findMany({
+     include: {userSetting: true}, 
+     omit: {hash: true},
+    });
+  }
+
+  async findOne(id: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: id
+      },
+      
+      include: {
+        userSetting: {
+          select: {
+            notifications: true,
+            smsAlerts: true,
+            profilePicture: true,
+          },
+        },
+        post: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+          },
+        },
+      },
+      
+    })
+    if (!user) {
+      throw new NotFoundException("User not found")
+    }
+    
+    // Add full URL for profile picture
+    return {
+      ...user,
+      userSetting: user.userSetting ? {
+        ...user.userSetting,
+        profilePictureUrl: getFileUrl(user.userSetting.profilePicture),
+      } : null,
+    };
+  }
+
+  async update(id: string, data: UpdateUserDTO) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException("User not found")
     }
 
-    async findAll() : Promise<User[]>{
-        return this.userModel.find().select('-password').exec()
+    const updatedUser = await this.prismaService.user.update({
+      where: {
+        id: id
+      },
+      data: data,
+      omit: {hash: true},
+    })
+    return updatedUser;
+  }
+
+  async updateSettings(userId: string, data: UserSettingDTO, filePath: string | null) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId
+      },
+      include: {userSetting: true},
+    })
+    if (!user) {
+      throw new NotFoundException("User not found")
+    }
+    if (!user.userSetting) {
+      throw new NotFoundException("User setting not found")
     }
 
-    async findOne(id: string) : Promise<User>{
-        const user= await this.userModel.findById(id).select('-password').exec();
-         if(!user){
-            throw new NotFoundException("User not found")
-         }
-         return user;
-    }
+    const updatedUserSetting = await this.prismaService.userSetting.update({
+      where: {
+        userId
+      },
+      data: {
+        ...data,
+        profilePicture: filePath,
+      },
+    })
 
-    async findByEmail(email: string) : Promise<User | null>{
-        return this.userModel.findOne({email}).exec();
-    }
+    // Return with full URL for profile picture
+    return {
+      ...updatedUserSetting,
+      profilePictureUrl: getFileUrl(updatedUserSetting.profilePicture),
+    };
+  }
+
+  
+
 }
 
 

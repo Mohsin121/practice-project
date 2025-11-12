@@ -1,58 +1,90 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { RegisterUserDTO } from './dto/register.dto';
-import { User } from '../users/entities/user.entity';
-import { LoginDTO } from './dto/login.dto';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
 
     constructor(
-        private readonly usersService: UsersService,
+        private readonly prismaService: PrismaService,
         private readonly jwtService: JwtService,
+        private readonly mailService: MailService,
     ) { }
 
-    async register(registerUserDTO: RegisterUserDTO): Promise<User> {
-        const existingUser = await this.usersService.findByEmail(registerUserDTO.email)
-        if (existingUser) {
-            throw new ConflictException("User with this email already exists")
+    async register(registerUserDTO: RegisterUserDTO) {
+        const hashedPassword = await bcrypt.hash(registerUserDTO.password, 10)
+        try {
+            const newUser = await this.prismaService.user.create({
+                data: {
+                    email: registerUserDTO.email,
+                    hash: hashedPassword,
+                    name: registerUserDTO.name,
+                    userSetting: {
+                        create: {
+                            notifications: false,
+                            smsAlerts: true,
+                        },
+                    },
+                },
+
+
+            })
+            await this.mailService.sendWelcomeEmail("mhsnmubeen@gmail.com", newUser.name || '');
+
+            const { hash, ...user } = newUser;
+
+            return user;
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new ConflictException("User with this email already exists");
+                }
+            }
+            throw error;
         }
-        const newUser = await this.usersService.create(registerUserDTO)
-        return newUser;
 
     }
 
-    async login(loginUserDTO: LoginDTO) {
-        const user = await this.usersService.findByEmail(loginUserDTO.email);
+    async validateUser(email: string, password: string) {
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                email: email,
+            }
+        })
         if (!user) {
-            throw new NotFoundException("Invalid email or password");
+            throw new NotFoundException("User not found");
         }
-
-        const isPasswordValid = await bcrypt.compare(loginUserDTO.password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.hash);
         if (!isPasswordValid) {
             throw new UnauthorizedException("Invalid email or password");
         }
-        const accessToken = await this.generateToken(user._id as string, user.email);
-        
-        return {
-            user:{
-                _id: user._id,
-                email: user.email,
-                name: user.name,
-            },
-            accessToken, // Return token for cookie
-          };
-        
+        const { hash, ...userWithoutHash } = user;
+        return userWithoutHash;
     }
 
-    private async generateToken(userId: string, email: string): Promise<string> {
-        const payload = { sub: userId, email };
-        return this.jwtService.signAsync(payload, {
-          secret: process.env.JWT_SECRET,
-          expiresIn: '1d',
+    async login(user: any) {
+        const payload = { sub: user.id, email: user.email, role: user.role };
+
+        const accessToken = await this.jwtService.signAsync(payload, {
+            secret: process.env.JWT_SECRET,
+            expiresIn: '1d',
         });
-      }
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+            },
+            accessToken,
+        };
+
+    }
+
 
 }

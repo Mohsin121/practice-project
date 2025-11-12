@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./prisma/ERD.svg"     // or .png, .pdf
+  theme    = "forest"              // optional
+}
+
+enum GlobalRole {
+  SUPER_ADMIN
+  USER
+}
+
+model User {
+  id        String      @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email       String       @unique
+  hash        String
+  name        String?
+  role        GlobalRole @default(USER)
+  userSetting UserSetting?
+  post Post[]
+  group Group[]
+  groupMember GroupMember[]
+  comments Comment[]
+  postLikes PostLike[]
+
+  @@map("users")
+}
+
+model UserSetting {
+  id            String     @id @default(cuid())
+  notifications Boolean @default(true)
+  smsAlerts     Boolean @default(true)
+  profilePicture String?
+
+  user   User @relation(fields: [userId], references: [id])
+  userId String  @unique
+
+
+  @@map("user_settings")
+}
+
+model Post {
+  id            String     @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title String
+  content String
+
+  author User @relation(fields:[authorId], references:[id])
+  authorId String
+
+  group Group? @relation(fields:[groupId], references:[id])
+  groupId String?
+
+  comments Comment[]
+  postLikes PostLike[]
+
+  
+  @@map("posts")
+}
+
+model Group {
+  id    String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title String
+  content String
+
+  owner User @relation(fields:[ownerId], references:[id])
+  ownerId String
+
+  posts Post[]
+
+  groupMember GroupMember[]
+
+  
+  @@map("groups")
+}
+
+model GroupMember {
+ joinedAt DateTime @default(now())
+
+ user User @relation(fields:[userId], references:[id])
+ userId String
+
+ group Group @relation(fields:[groupId], references:[id])
+ groupId String
+
+
+ @@unique([userId, groupId])
+ @@map("group_members")
+}
+
+model Comment {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content String
+
+  commentedBy User? @relation(fields:[commentedById], references:[id])
+  commentedById String?
+
+  post Post @relation(fields:[postId], references:[id])
+  postId String
+
+  parentComment Comment? @relation("CommentReplies", fields:[parentCommentId], references:[id])
+  parentCommentId String?
+
+  replies Comment[] @relation("CommentReplies")
+
+  @@map("comments")
+}
+
+model PostLike {
+  id String @id @default(cuid())
+
+  post Post @relation(fields:[postId], references:[id])
+  postId String
+
+  likedBy User @relation(fields:[likedById], references:[id])
+  likedById String
+
+  @@unique([postId, likedById])
+  @@map("post_likes")
+}
+
+
+
